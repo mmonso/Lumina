@@ -1,0 +1,5 @@
+{
+  "name": "Lumina Chat",
+  "description": "Um chatbot minimalista e elegante com design Liquid Glass, alimentado pelo Gemini 2.5 Flash.",
+  "requestFramePermissions": []
+}
