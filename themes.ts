@@ -122,6 +122,91 @@ export const themes: ThemeConfig[] = [
       bubbleModel: 'bg-white/20 border-white/40 text-slate-800 shadow-sm backdrop-blur-xl',
       inputBg: 'bg-white/30 border-white/50 backdrop-blur-xl shadow-lg'
     }
+  },
+  {
+    id: 'nebula',
+    name: 'Nebulosa (Dark)',
+    isDark: true,
+    colors: {
+      bg: 'bg-[#0b0a1e]', // Deep Violet/Black
+      text: 'text-purple-50',
+      textMuted: 'text-purple-300/60',
+      accent: 'purple',
+      orb1: 'bg-violet-600/30',
+      orb2: 'bg-fuchsia-600/20',
+      orb3: 'bg-indigo-500/20',
+      bubbleUser: 'bg-violet-500/10 border-violet-500/20 text-purple-100',
+      bubbleModel: 'bg-[#1a1625]/60 border-white/5 text-purple-50',
+      inputBg: 'bg-[#15122b]/80 border-purple-500/20'
+    }
+  },
+  {
+    id: 'sunset',
+    name: 'Sunset (Dark)',
+    isDark: true,
+    colors: {
+      bg: 'bg-[#0f172a]', // Slate 900
+      text: 'text-rose-50',
+      textMuted: 'text-slate-400',
+      accent: 'pink',
+      orb1: 'bg-orange-500/20', // Sun
+      orb2: 'bg-rose-600/20',   // Horizon
+      orb3: 'bg-purple-600/20', // Sky
+      bubbleUser: 'bg-rose-500/10 border-rose-500/20 text-rose-100',
+      bubbleModel: 'bg-slate-800/50 border-white/5 text-slate-200',
+      inputBg: 'bg-slate-900/80 border-rose-500/20'
+    }
+  },
+  {
+    id: 'lavender',
+    name: 'Lavanda (Light)',
+    isDark: false,
+    colors: {
+      bg: 'bg-[#f3f0ff]', // Purple 50
+      text: 'text-slate-800',
+      textMuted: 'text-slate-500',
+      accent: 'violet',
+      orb1: 'bg-purple-300/40',
+      orb2: 'bg-violet-300/40',
+      orb3: 'bg-white/60',
+      bubbleUser: 'bg-violet-500/10 border-violet-200 text-violet-900',
+      bubbleModel: 'bg-white/70 border-purple-100 text-slate-800 shadow-sm',
+      inputBg: 'bg-white/60 border-purple-200'
+    }
+  },
+  {
+    id: 'crimson',
+    name: 'Carmesim (Dark)',
+    isDark: true,
+    colors: {
+      bg: 'bg-[#18181b]', // Zinc 950
+      text: 'text-red-50',
+      textMuted: 'text-zinc-500',
+      accent: 'red',
+      orb1: 'bg-red-700/20',
+      orb2: 'bg-rose-900/20',
+      orb3: 'bg-zinc-700/10',
+      bubbleUser: 'bg-red-600/10 border-red-800/30 text-red-100',
+      bubbleModel: 'bg-zinc-900/60 border-white/5 text-zinc-300',
+      inputBg: 'bg-zinc-900/80 border-red-900/30'
+    }
+  },
+  {
+    id: 'mint',
+    name: 'Menta (Light)',
+    isDark: false,
+    colors: {
+      bg: 'bg-[#f0fdf4]', // Green 50
+      text: 'text-teal-900',
+      textMuted: 'text-teal-600/70',
+      accent: 'teal',
+      orb1: 'bg-emerald-300/30',
+      orb2: 'bg-teal-200/30',
+      orb3: 'bg-white/60',
+      bubbleUser: 'bg-teal-600/10 border-teal-200 text-teal-900',
+      bubbleModel: 'bg-white/70 border-emerald-100 text-teal-950 shadow-sm',
+      inputBg: 'bg-white/60 border-emerald-200'
+    }
   }
 ];
 
