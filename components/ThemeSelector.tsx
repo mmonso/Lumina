@@ -6,11 +6,28 @@ interface ThemeSelectorProps {
   currentTheme: ThemeConfig;
   onSelect: (themeId: string) => void;
   onClose: () => void;
+  align?: 'left' | 'right' | 'center';
+  direction?: 'up' | 'down';
 }
 
-const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme, onSelect, onClose }) => {
+const ThemeSelector: React.FC<ThemeSelectorProps> = ({ 
+  currentTheme, 
+  onSelect, 
+  onClose, 
+  align = 'right',
+  direction = 'down'
+}) => {
+  let alignmentClass = '';
+  switch (align) {
+    case 'left': alignmentClass = 'left-0'; break;
+    case 'center': alignmentClass = 'left-1/2 -translate-x-1/2'; break;
+    case 'right': default: alignmentClass = 'right-0'; break;
+  }
+
+  const verticalClass = direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2';
+
   return (
-    <div className="absolute right-0 top-12 mt-2 w-56 rounded-xl overflow-hidden backdrop-blur-xl border shadow-2xl z-50 animate-fade-in-up"
+    <div className={`absolute ${alignmentClass} ${verticalClass} w-56 rounded-xl overflow-hidden backdrop-blur-xl border shadow-2xl z-50 animate-fade-in-up origin-bottom`}
          style={{ 
              backgroundColor: currentTheme.isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)', 
              borderColor: currentTheme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' 
@@ -20,7 +37,7 @@ const ThemeSelector: React.FC<ThemeSelectorProps> = ({ currentTheme, onSelect, o
           <h4 className="text-xs font-semibold uppercase tracking-wider opacity-70">Temas</h4>
       </div>
       
-      <div className="p-2 grid grid-cols-1 gap-1 max-h-64 overflow-y-auto">
+      <div className="p-2 grid grid-cols-1 gap-1 max-h-64 overflow-y-auto custom-scrollbar">
           {themes.map(theme => (
               <button
                 key={theme.id}

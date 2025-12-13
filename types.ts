@@ -1,3 +1,4 @@
+
 export enum Role {
   User = 'user',
   Model = 'model'
@@ -33,27 +34,21 @@ export interface Message {
   timestamp: number;
 }
 
-export interface ChatState {
-  messages: Message[];
-  isLoading: boolean;
-  error: string | null;
-}
-
 export interface ThemeConfig {
   id: string;
   name: string;
   isDark: boolean;
   colors: {
-    bg: string;      // Tailwind class for main background
-    text: string;    // Tailwind class for primary text
-    textMuted: string; // Tailwind class for secondary text
-    accent: string;  // Hex or class for specific accents
-    orb1: string;    // Tailwind class for blob 1
-    orb2: string;    // Tailwind class for blob 2
-    orb3: string;    // Tailwind class for blob 3
-    bubbleUser: string; // Styling for user bubble
-    bubbleModel: string; // Styling for model bubble
-    inputBg: string; // Styling for input area
+    bg: string;
+    text: string;
+    textMuted: string;
+    accent: string;
+    orb1: string;
+    orb2: string;
+    orb3: string;
+    bubbleUser: string;
+    bubbleModel: string;
+    inputBg: string;
   }
 }
 
@@ -63,4 +58,31 @@ export interface Toast {
   id: string;
   message: string;
   type: ToastType;
+}
+
+// User System
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string; // Optional URL or base64
+}
+
+// Hierarquia: Projeto -> Conversas -> Mensagens
+
+export interface Project {
+  id: string;
+  userId: string; // Owner of the project
+  name: string; 
+  systemInstruction: string;
+  themeId: string;
+  createdAt: number;
+}
+
+export interface Conversation {
+  id: string;
+  projectId: string; // Link para o projeto pai
+  title: string;
+  updatedAt: number;
+  preview?: string;
 }

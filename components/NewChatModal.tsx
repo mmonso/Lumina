@@ -17,7 +17,7 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onStart, c
   if (!isOpen) return null;
 
   const handleStart = () => {
-    onStart(name || "Nova Conversa", instruction, selectedThemeId);
+    onStart(name || "Novo Projeto", instruction, selectedThemeId);
     onClose();
     // Reset fields slightly after close for animation
     setTimeout(() => {
@@ -39,7 +39,7 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onStart, c
         {/* Header */}
         <div className="p-6 border-b border-white/5 bg-white/5 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-light text-white tracking-wide">Nova Conversa</h2>
+            <h2 className="text-xl font-light text-white tracking-wide">Novo Projeto</h2>
             <p className="text-xs text-slate-400 mt-1">Configure o ambiente e a personalidade do Lumina</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -53,7 +53,7 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onStart, c
           
           {/* Section 0: Name */}
           <div className="space-y-3">
-             <label className="text-sm font-medium text-indigo-300 uppercase tracking-wider">Nome da Conversa</label>
+             <label className="text-sm font-medium text-indigo-300 uppercase tracking-wider">Nome do Projeto</label>
              <input 
                 type="text"
                 value={name}
@@ -120,7 +120,7 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ isOpen, onClose, onStart, c
             onClick={handleStart}
             className="px-8 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-bold shadow-lg shadow-indigo-900/50 transition-all transform hover:scale-105 active:scale-95"
           >
-            Iniciar Conversa
+            Iniciar Projeto
           </button>
         </div>
 

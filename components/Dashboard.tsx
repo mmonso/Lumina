@@ -1,116 +1,178 @@
-import React from 'react';
-import { ThemeConfig } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { ThemeConfig, Project } from '../types';
+import ThemeSelector from './ThemeSelector';
 
 interface DashboardProps {
-  onNewChat: () => void;
-  onContinue: () => void;
-  activeChatName: string | null;
+  onNewProject: () => void;
+  onSelectProject: (id: string) => void;
+  onRenameProject: (id: string, newName: string) => void;
+  onDeleteProject: (id: string) => void;
+  projects: Project[];
   theme: ThemeConfig;
+  onThemeChange: (themeId: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNewChat, onContinue, activeChatName, theme }) => {
+const Dashboard: React.FC<DashboardProps> = ({ 
+    onNewProject, 
+    onSelectProject, 
+    onRenameProject, 
+    onDeleteProject, 
+    projects, 
+    theme, 
+    onThemeChange 
+}) => {
+  const [isThemeSelectorOpen, setIsThemeSelectorOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  
   const textColor = theme.isDark ? 'text-white' : 'text-slate-800';
-  const subTextColor = theme.isDark ? 'text-white/50' : 'text-slate-500';
+
+  useEffect(() => {
+    if (editingProjectId && inputRef.current) {
+        inputRef.current.focus();
+    }
+  }, [editingProjectId]);
+
+  const startEditing = (e: React.MouseEvent, project: Project) => {
+    e.stopPropagation();
+    setEditingProjectId(project.id);
+    setEditName(project.name);
+  };
+
+  const saveEdit = () => {
+    if (editingProjectId && editName.trim()) {
+        onRenameProject(editingProjectId, editName.trim());
+    }
+    setEditingProjectId(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingProjectId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') saveEdit();
+    if (e.key === 'Escape') cancelEdit();
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+      e.stopPropagation();
+      if (window.confirm("Tem certeza que deseja excluir este projeto e todas as suas conversas?")) {
+          onDeleteProject(id);
+      }
+  };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 animate-fade-in-up">
-      <div className="max-w-2xl w-full text-center space-y-12">
+    <div className="flex-1 flex flex-col items-center justify-start pt-20 p-6 animate-fade-in-up relative overflow-y-auto">
+      
+      {/* Theme Selector (Fixed Bottom Center) */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]">
+          <div className="relative">
+            {isThemeSelectorOpen && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsThemeSelectorOpen(false)}></div>
+                    <ThemeSelector currentTheme={theme} onSelect={onThemeChange} onClose={() => setIsThemeSelectorOpen(false)} align="center" direction="up" />
+                </>
+            )}
+            <button onClick={() => setIsThemeSelectorOpen(!isThemeSelectorOpen)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-500 ${theme.isDark ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:bg-black/5'} opacity-40 hover:opacity-100`}>
+                <div className={`w-3 h-3 rounded-full border shadow-sm relative overflow-hidden ${theme.colors.bg.replace('bg-', 'bg-')}`} style={{ borderColor: 'currentColor' }}><div className={`absolute inset-0 opacity-50 ${theme.colors.orb1}`}></div></div>
+                <span className="text-[10px] uppercase tracking-widest font-medium">Tema</span>
+            </button>
+        </div>
+      </div>
+
+      <div className="max-w-4xl w-full text-center space-y-12 pb-20">
         
-        {/* Logo / Brand Area */}
+        {/* Logo */}
         <div className="space-y-4">
           <div className="relative inline-block">
              <div className={`absolute -inset-4 rounded-full blur-3xl opacity-20 bg-${theme.colors.accent}-500 animate-pulse`}></div>
-             <h1 className={`relative text-6xl md:text-8xl font-thin tracking-[0.2em] ${textColor} drop-shadow-2xl`}>
-                LUMINA
-             </h1>
+             <h1 className={`relative text-6xl md:text-8xl font-thin tracking-[0.2em] ${textColor} drop-shadow-2xl`}>LUMINA</h1>
           </div>
-          <p className={`text-sm md:text-base tracking-[0.3em] uppercase opacity-70 ${textColor}`}>
-            Inteligência Artificial & Design Fluido
-          </p>
+          <p className={`text-sm md:text-base tracking-[0.3em] uppercase opacity-70 ${textColor}`}>Gestão de Projetos & IA</p>
         </div>
 
         {/* Action Area */}
-        <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
+        <div className="flex flex-col items-center gap-6 w-full mx-auto">
           
-          {/* New Chat Button (Primary Action) */}
-          <button
-            onClick={onNewChat}
-            className={`
-              w-full group relative px-8 py-4 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]
-              border shadow-2xl hover:shadow-${theme.colors.accent}-500/20
-              ${theme.isDark 
-                 ? 'bg-white/5 border-white/10 hover:bg-white/10' 
-                 : 'bg-white/40 border-white/40 hover:bg-white/60'
-              }
-            `}
-          >
+          <button onClick={onNewProject} className={`w-full max-w-md group relative px-8 py-4 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] border shadow-2xl hover:shadow-${theme.colors.accent}-500/20 ${theme.isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/40 border-white/40 hover:bg-white/60'}`}>
             <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-${theme.colors.accent}-500 to-purple-500 transition-opacity`}></div>
             <div className="flex items-center justify-center gap-4">
               <span className={`p-2 rounded-lg bg-${theme.colors.accent}-500/20 text-${theme.colors.accent}-500 group-hover:text-white group-hover:bg-${theme.colors.accent}-500 transition-colors`}>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
               </span>
-              <span className={`text-lg font-light tracking-wide ${textColor}`}>
-                  Nova Conversa
-              </span>
+              <span className={`text-lg font-light tracking-wide ${textColor}`}>Criar Novo Projeto</span>
             </div>
           </button>
 
-          {/* Continue Button (If chat exists) */}
-          {activeChatName && (
-             <div className="w-full animate-fade-in-up delay-100 flex flex-col gap-2">
-                 <div className={`text-[10px] uppercase tracking-widest pl-2 opacity-60 text-left ${textColor}`}>Em andamento</div>
-                 <button
-                    onClick={onContinue}
-                    className={`
-                      w-full group relative px-8 py-4 rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]
-                      backdrop-blur-xl border shadow-xl flex items-center justify-between
-                      ${theme.isDark 
-                        ? 'bg-white/10 border-white/20 hover:bg-white/15' 
-                        : 'bg-white/60 border-black/5 hover:bg-white/80'
-                      }
-                    `}
-                  >
-                     <div className="flex flex-col items-start">
-                         <span className={`text-lg font-light truncate max-w-[200px] sm:max-w-xs ${textColor}`}>{activeChatName}</span>
-                         <span className={`text-[10px] uppercase tracking-wider opacity-60 ${textColor}`}>Continuar anterior</span>
-                     </div>
-                     <div className={`p-2 rounded-full ${theme.isDark ? 'bg-white/10' : 'bg-black/5'}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${textColor}`}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                        </svg>
-                     </div>
-                 </button>
+          {/* Project List Grid */}
+          {projects.length > 0 && (
+             <div className="w-full mt-8 animate-fade-in-up delay-100">
+                 <div className={`text-[10px] uppercase tracking-widest mb-4 opacity-60 text-center ${textColor}`}>Seus Projetos</div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-left">
+                     {projects.map(project => (
+                        <div
+                            key={project.id}
+                            onClick={() => editingProjectId !== project.id && onSelectProject(project.id)}
+                            className={`group relative p-4 rounded-xl border transition-all hover:scale-[1.02] flex items-start gap-3 cursor-pointer ${theme.isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/50 border-black/5 hover:bg-white/80'}`}
+                        >
+                            <div className={`p-2 rounded-lg shrink-0 ${theme.isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>
+                            </div>
+                            
+                            <div className="min-w-0 flex-1">
+                                {editingProjectId === project.id ? (
+                                    <input 
+                                        ref={inputRef}
+                                        type="text" 
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        onBlur={saveEdit}
+                                        onKeyDown={handleKeyDown}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={`w-full bg-transparent border-b ${theme.isDark ? 'border-white/50 text-white' : 'border-black/50 text-black'} focus:outline-none p-0 text-base font-medium`}
+                                    />
+                                ) : (
+                                    <>
+                                        <div className={`font-medium truncate ${textColor}`}>{project.name}</div>
+                                        <div className={`text-xs opacity-60 truncate ${textColor}`}>{new Date(project.createdAt).toLocaleDateString()}</div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Actions (Edit/Delete) - Only visible on hover and not editing */}
+                            {editingProjectId !== project.id && (
+                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-sm rounded-lg p-1">
+                                    <button 
+                                        onClick={(e) => startEditing(e, project)} 
+                                        className="p-1.5 rounded-md hover:bg-indigo-500 text-white/70 hover:text-white transition-colors"
+                                        title="Renomear"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                        </svg>
+                                    </button>
+                                    <button 
+                                        onClick={(e) => handleDelete(e, project.id)} 
+                                        className="p-1.5 rounded-md hover:bg-red-500 text-white/70 hover:text-white transition-colors"
+                                        title="Excluir"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                     ))}
+                 </div>
              </div>
           )}
-          
-          {!activeChatName && (
-             <p className={`text-xs ${subTextColor} font-light italic text-center leading-relaxed mt-2`}>
-               "Configure sua persona, escolha seu tema e inicie uma nova jornada."
-             </p>
-          )}
         </div>
-
-        {/* Footer Features */}
-        <div className={`grid grid-cols-3 gap-4 pt-12 border-t w-full ${theme.isDark ? 'border-white/5' : 'border-black/5'}`}>
-            <FeatureItem icon="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" label="Gemini 2.5" theme={theme} />
-            <FeatureItem icon="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" label="Multimodal" theme={theme} />
-            <FeatureItem icon="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.546-3.131 1.567-4.382m15.686 0A17.931 17.931 0 0121 12m-1.566 4.383A8.969 8.969 0 0112 16.5V21" label="Web Search" theme={theme} />
-        </div>
-
       </div>
     </div>
   );
 };
-
-const FeatureItem: React.FC<{ icon: string, label: string, theme: ThemeConfig }> = ({ icon, label, theme }) => (
-    <div className={`flex flex-col items-center gap-2 opacity-50 ${theme.isDark ? 'text-white' : 'text-slate-800'}`}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-            <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
-        </svg>
-        <span className="text-[10px] uppercase tracking-wider">{label}</span>
-    </div>
-);
 
 export default Dashboard;

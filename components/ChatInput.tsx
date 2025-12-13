@@ -34,6 +34,16 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStop, isLoading, theme,
     }
   }, [initialText]);
 
+  // Auto-focus logic: When loading stops or recording ends, refocus the textarea
+  useEffect(() => {
+    if (!isLoading && !isRecording && textareaRef.current) {
+      // Small timeout ensures the DOM has updated (removing disabled attribute)
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 10);
+    }
+  }, [isLoading, isRecording]);
+
   const handleSubmit = () => {
     if (isLoading) {
         if (onStop) onStop();

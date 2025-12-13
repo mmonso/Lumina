@@ -79,12 +79,49 @@ class GeminiService {
     }
   }
 
-  public async sendMessageStream(
+  public async generateTitle(message: string): Promise<string> {
+    try {
+      // Use structured content to be safer with the API
+      // Prompt ajustado para ser extremamente direto
+      const prompt = `Gere um título de 2 a 4 palavras para esta mensagem: "${message}". Responda APENAS o título.`;
+      
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: {
+          role: 'user',
+          parts: [{ text: prompt }]
+        },
+        config: {
+           temperature: 0.7, // Um pouco mais de criatividade para evitar recusas
+           maxOutputTokens: 20
+        }
+      });
+      
+      let title = response.text?.trim();
+      
+      // Sanitização básica
+      if (title) {
+          title = title.replace(/^["']|["']$/g, ''); // Remove aspas
+          title = title.replace(/\.$/, ''); // Remove ponto final
+          title = title.replace(/^Título:\s*/i, ''); // Remove prefixo se houver
+          // Se o modelo alucinar e devolver a própria pergunta longa, corte
+          if (title.length > 40) {
+              title = title.substring(0, 40) + "...";
+          }
+      }
+      
+      return title || "";
+    } catch (error) {
+      console.error("Failed to generate title", error);
+      return "";
+    }
+  }
+
+  public async sendMessage(
     message: string, 
     attachments: Attachment[] = [],
-    useSearch: boolean,
-    onUpdate: (text: string, metadata?: GroundingMetadata) => void
-  ): Promise<void> {
+    useSearch: boolean
+  ): Promise<{ text: string, metadata?: GroundingMetadata }> {
     
     // Check if we need to re-initialize due to configuration change
     if (!this.chatSession || this.currentUseSearch !== useSearch) {
@@ -129,42 +166,33 @@ class GeminiService {
 
       const content = parts.length === 1 && parts[0].text ? parts[0].text : parts;
 
-      // Note: The current SDK might not fully support signal in sendMessageStream types yet, 
-      // but we use the abort controller to break the loop client-side.
-      const resultStream = await this.chatSession.sendMessageStream({ 
+      const response = await this.chatSession.sendMessage({ 
         message: content,
       });
 
-      for await (const chunk of resultStream) {
-        // Check abort signal manually inside loop
-        if (this.abortController.signal.aborted) {
-            break; 
-        }
-
-        const c = chunk as GenerateContentResponse;
-        
-        if (c.text) {
-          let metadata: GroundingMetadata | undefined = undefined;
-          
-          if (c.candidates && c.candidates[0]?.groundingMetadata) {
-             const gm = c.candidates[0].groundingMetadata;
-             if (gm.groundingChunks) {
-                 metadata = {
-                     groundingChunks: gm.groundingChunks.map((chunk: any) => ({
-                         web: chunk.web ? { uri: chunk.web.uri, title: chunk.web.title } : undefined
-                     })),
-                     searchEntryPoint: gm.searchEntryPoint ? { renderedContent: gm.searchEntryPoint.renderedContent } : undefined
-                 };
-             }
-          }
-          
-          onUpdate(c.text, metadata);
-        }
+      let metadata: GroundingMetadata | undefined = undefined;
+      
+      if (response.candidates && response.candidates[0]?.groundingMetadata) {
+         const gm = response.candidates[0].groundingMetadata;
+         if (gm.groundingChunks) {
+             metadata = {
+                 groundingChunks: gm.groundingChunks.map((chunk: any) => ({
+                     web: chunk.web ? { uri: chunk.web.uri, title: chunk.web.title } : undefined
+                 })),
+                 searchEntryPoint: gm.searchEntryPoint ? { renderedContent: gm.searchEntryPoint.renderedContent } : undefined
+             };
+         }
       }
+
+      return {
+          text: response.text || '',
+          metadata
+      };
+
     } catch (error: any) {
       if (this.abortController?.signal.aborted) {
-        // Ignore abort errors
-        return;
+        // Return empty logic handled by caller or just throw
+        throw error;
       }
       console.error("Error sending message to Gemini:", error);
       throw error;
