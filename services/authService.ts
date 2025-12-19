@@ -9,53 +9,55 @@ const hashPassword = (password: string): string => {
   return btoa(password);
 };
 
+import { supabase } from './supabaseClient';
+import { User } from '../types';
+
 export const authService = {
-  getUsers: (): any[] => {
-    const usersStr = localStorage.getItem(USERS_KEY);
-    return usersStr ? JSON.parse(usersStr) : [];
-  },
-
-  getSession: (): User | null => {
-    const sessionStr = localStorage.getItem(SESSION_KEY);
-    return sessionStr ? JSON.parse(sessionStr) : null;
-  },
-
-  login: (email: string, password: string): { success: boolean; user?: User; error?: string } => {
-    const users = authService.getUsers();
-    const user = users.find(u => u.email === email && u.password === hashPassword(password));
-
-    if (user) {
-      const { password, ...safeUser } = user;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(safeUser));
-      return { success: true, user: safeUser };
+  // Obtém a sessão atual do Supabase
+  getSession: async (): Promise<User | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      return {
+        id: session.user.id,
+        email: session.user.email || '',
+        name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'Usuário',
+        avatar: session.user.user_metadata.avatar_url
+      };
     }
-    return { success: false, error: 'Credenciais inválidas.' };
+    return null;
   },
 
-  register: (name: string, email: string, password: string): { success: boolean; user?: User; error?: string } => {
-    const users = authService.getUsers();
-    
-    if (users.find(u => u.email === email)) {
-      return { success: false, error: 'E-mail já cadastrado.' };
-    }
-
-    const newUser = {
-      id: Math.random().toString(36).substring(2, 15),
-      name,
+  // Login real via Supabase
+  login: async (email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password: hashPassword(password)
-    };
+      password,
+    });
 
-    users.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    if (error) {
+      return { success: false, error: error.message };
+    }
 
-    const { password: _, ...safeUser } = newUser;
-    localStorage.setItem(SESSION_KEY, JSON.stringify(safeUser));
+    if (data.user) {
+      const user: User = {
+        id: data.user.id,
+        email: data.user.email || '',
+        name: data.user.user_metadata.name || data.user.email?.split('@')[0] || 'Usuário'
+      };
+      return { success: true, user };
+    }
 
-    return { success: true, user: safeUser };
+    return { success: false, error: 'Erro desconhecido no login.' };
   },
 
-  logout: () => {
-    localStorage.removeItem(SESSION_KEY);
+  // Logout real
+  logout: async () => {
+    await supabase.auth.signOut();
+  },
+
+  // Registro (se voltarmos a habilitar futuramente)
+  register: async (name: string, email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    return { success: false, error: 'Registro temporariamente desabilitado.' };
   }
 };
+
